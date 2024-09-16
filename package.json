@@ -1,0 +1,28 @@
+{
+  "name": "mern-youtube",
+  "version": "1.0.0",
+  "description": "youtube clone",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BapiMajumder1402/MERN-Youtube.git"
+  },
+  "author": "Bapi Majumder",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BapiMajumder1402/MERN-Youtube/issues"
+  },
+  "homepage": "https://github.com/BapiMajumder1402/MERN-Youtube#readme",
+  "dependencies": {
+    "express": "^4.21.0",
+    "mongoose": "^8.6.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
