@@ -48,8 +48,7 @@ userSchema.pre("save", async function (next) {
     this.password = bcrypt.hash(this.password, 10);
     next();
 })
-// ACCESS_TOKEN_SECRET
-// REFRESH_TOKEN_SECRET EXPIRY
+
 userSchema.methods.isPasswordCorrect = async function (password) {
     return await bcrypt.compare(password, this.password)
 }
