@@ -148,4 +148,59 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     .cookie("refreshToken",refreshToken,options)
     .json(new ApiResponse(200,{accessToken,refreshToken},"Token successfully refreshed"))
 })
-export { registerUser, logInUser, logoutUser, refreshAccessToken };
+
+const resetPassword = asyncHandler(async(req, res) => {
+    const {oldPassword , newPassword } = req.body;
+    const user =await User.findById(req.user?._id)
+    const verified = user.isPasswordCorrect(oldPassword)
+
+    if(!verified) {
+        throw new ApiError(400,"not a valid password")
+    }
+    user.password=newPassword
+    await user.save({validateBeforeSave:false})
+    return res.status(201).json(new ApiResponse(201,"Password changed"))
+})
+
+const getCurrentUser = asyncHandler(async(req, res) => {
+    return res.status(200).json(new ApiResponse(201,req.user,"Current user data"))
+})
+
+const updateUserDetails = asyncHandler(async(req, res) => {
+    const { fullName , email } = req.body;
+    if( !fullName && !email) {
+        throw new ApiError(400,"Email or name required")
+    }
+    const user = User.findByIdAndUpdate(req.user?._id,
+        {
+            $set:{
+                fullName,email
+            }
+        },{new : true}
+    ).select("-password")
+    return res.status(200).json(new ApiResponse(201,user,"User data updated successfully"))
+})
+
+const updateAvatar = asyncHandler(async(req, res) => {
+    const avatar = req.file?.path;
+
+    if(!avatar){
+        throw new ApiError(400,"File is required")
+    }
+    const avatarUrl = await uploadOnCloudinary(avatar)
+    if(!avatarUrl.url){
+        throw new ApiError(400,"Avatar is not uploaded correctly")
+    }
+
+    const updatedData = await User.findByIdAndUpdate(req.user?._id,{
+        $set:{
+            avatar:avatarUrl.url
+        }
+    },{new:true}).select("-password")
+
+    return res.status(200).json(new ApiResponse( 201, updatedData ,"User data updated successfully"))
+})
+
+
+
+export { registerUser, logInUser, logoutUser, refreshAccessToken , resetPassword , getCurrentUser , updateUserDetails , updateAvatar };
