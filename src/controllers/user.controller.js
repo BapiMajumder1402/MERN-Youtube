@@ -191,16 +191,71 @@ const updateAvatar = asyncHandler(async(req, res) => {
     if(!avatarUrl.url){
         throw new ApiError(400,"Avatar is not uploaded correctly")
     }
-
     const updatedData = await User.findByIdAndUpdate(req.user?._id,{
         $set:{
             avatar:avatarUrl.url
         }
     },{new:true}).select("-password")
-
     return res.status(200).json(new ApiResponse( 201, updatedData ,"User data updated successfully"))
 })
 
+const getUserChannelProfile = asyncHandler( async(req , res)=>{
+    const { userName } = req.params;
+    if(!userName?.trim()){
+        throw new ApiError(401,"Provide User Name")
+    }
+    const channel = await User.aggregate([
+        {
+        $match:{
+            userName :userName?.toLowerCase()
+        }
+    },{
+        $lookup:{
+            from:"subscriptions",
+            localField:"_id",
+            foreignField:"channel",
+            as : "subscribers"
+        }
+    },{
+        $lookup:{
+            from:"subscriptions",
+            localField:"_id",
+            foreignField:"subscriber",
+            as : "subscribedTo"
+        }
+    },{
+        $addFields:{
+            subscriberCount:{
+                $size:"$subscribers"
+            },
+            channelSubscribedCount:{
+                $size:"$subscribedTo"
+            },
+            isSubscribed:{
+                if:{$in:[req.user._id,"$subscribers.subscriber"]},
+                then:true,
+                else:false
+            }
+        }
+    },{
+        $project:{
+            fullName:1,
+            userName:1,
+            subscriberCount:1,
+            channelSubscribedCount:1,
+            isSubscribed:1,
+            avatar:1,
+            coverImage:1,
+            email:1,
+        }
+    }
+])
+    if(!channel?.length){
+        throw new ApiError(401,"Channel Does not exist")
+    }
+console.log(channel);
+return res.status(200,channel[0],"User channel fetched successfully")
+})
 
 
-export { registerUser, logInUser, logoutUser, refreshAccessToken , resetPassword , getCurrentUser , updateUserDetails , updateAvatar };
+export { registerUser, logInUser, logoutUser, refreshAccessToken , resetPassword , getCurrentUser , updateUserDetails , updateAvatar , getUserChannelProfile };

@@ -17,7 +17,9 @@ const userSchema = new Schema({
     userName: {
         type: String,
         required: true,
-        index: true
+        index: true,
+        trim: true,
+        lowercase:true
     },
     avatar: {
         type: String,
